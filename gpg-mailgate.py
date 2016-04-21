@@ -373,6 +373,11 @@ def gpg_encrypt( raw_message, recipients ):
 			if get_bool_from_cfg('default', 'add_header', 'yes'):
 				raw_message_mime['X-GPG-Mailgate'] = 'Encrypted by GPG Mailgate'
 
+			if raw_message_mime.has_key('Content-Transfer-Encoding'):
+                                raw_message_mime.replace_header('Content-Transfer-Encoding','8BIT')
+                        else:
+                                raw_message_mime['Content-Transfer-Encoding'] = '8BIT'
+
 			encrypted_payloads = encrypt_all_payloads_mime( raw_message_mime, gpg_to_cmdline_mime )
 			raw_message_mime.set_payload( encrypted_payloads )
 
@@ -384,6 +389,11 @@ def gpg_encrypt( raw_message, recipients ):
 
 			if get_bool_from_cfg('default', 'add_header', 'yes'):
 				raw_message_inline['X-GPG-Mailgate'] = 'Encrypted by GPG Mailgate'
+
+			if raw_message_inline.has_key('Content-Transfer-Encoding'):
+                                raw_message_inline.replace_header('Content-Transfer-Encoding','8BIT')
+                        else:
+                                raw_message_inline['Content-Transfer-Encoding'] = '8BIT'
 
 			encrypted_payloads = encrypt_all_payloads_inline( raw_message_inline, gpg_to_cmdline_inline )
 			raw_message_inline.set_payload( encrypted_payloads )
