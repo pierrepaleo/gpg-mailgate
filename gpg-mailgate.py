@@ -562,13 +562,13 @@ def get_cert_for_email( to_addr, cert_path ):
 		else:
 			if filename == to_addr:
 				return (file_path, to_addr)
-	# support foo+ignore@bar.com -> foo@bar.com
+	# support foo+ignore@bar.com -> foo@bar.com (RFC 3598)
 	multi_email = re.match('^([^\+]+)\+([^@]+)@(.*)$', to_addr)
 	if multi_email:
 		fixed_up_email = "%s@%s" % (multi_email.group(1), multi_email.group(3))
 		if verbose:
 			log("Multi-email %s converted to %s" % (to_addr, fixed_up_email))
-		return get_cert_for_email(fixed_up_email)
+		return get_cert_for_email(fixed_up_email, cert_path)
 
 	return None
 
