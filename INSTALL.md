@@ -2,11 +2,10 @@
 ## Content
 - General information
 - Install GPG-Mailgate
-- Install GPG-Mailgate-Web
 - Install Register-handler
 
 ## General information
-GPG-Mailgate is divided in 3 main parts: GPG-Mailgate itself, GPG-Mailgate-Web and Register-handler. Some parts of the GPG-Mailgate project depend on other parts of the project. You will find information about these dependencies at the beginning of every installation part.
+GPG-Mailgate is divided in 3 main parts: GPG-Mailgate itself, Register-handler. Some parts of the GPG-Mailgate project depend on other parts of the project. You will find information about these dependencies at the beginning of every installation part.
 
 These instructions show you how to set up GPG-Mailgate in an easy way. If you are a more advanced user, feel free to experiment with the settings. For these instructions a home directory for the user `nobody` is set. Sadly this is an odd workaround but no better solution was found.
 
@@ -103,48 +102,7 @@ From now on PGP encrypted mails will be decrypted for the recipients for whom th
 You also can remove a private key by using the following command. Replace `user@example.com` with the user's address for whom you want to remove the key:  
 `sudo -u nobody /usr/bin/gpg --homedir=/var/gpgmailgate/.gnupg --delete-secret-keys user@example.com`
 
-## Install GPG-Mailgate-Web
-### Requirements
-- A webserver is installed and reachable
-- The webserver is able to handle PHP scripts
-- MySQL is installed
-- Python 2.X is already installed
-
-### Installation
-All files you need can be found in the [gpg-mailgate-web] (gpg-mailgate-web/) directory.
-
-1. Install the Python-mysqldb and Python-markdown modules:
-
-        apt-get install python-mysqldb python-markdown
-
-2. Create a new database for GPG-Mailgate-Web.
-
-3. Import the schema file `schema.sql` into the newly created database.
-
-4. Edit the config file located at `/etc/gpg-mailgate.conf`. Set `enabled = yes` in `[database]` and fill in the necessary settings for the database connection.
-
-5. Copy the files located in the [public_html] (gpg-mailgate-web/public_html) directory onto your webserver. They can also be placed in a subdirectory on your webserver.
-
-6. On your webserver move the `config.sample.php` file to `config.php` and edit the configuration file.
-
-7. Create directories for storing email templates:
-        
-        mkdir -p /var/gpgmailgate/cron_templates
-        
-8. Copy the templates found in the [cron_templates] (cron_templates/) directory into the newly created directory and transfer ownership:
-
-        chown -R nobody:nogroup /var/gpgmailgate/cron_templates
-
-9. Copy `cron.py` to `/usr/local/bin/gpgmw-cron.py`. Make it executable and and transfer ownership to `nobody`:
-
-        chown nobody:nogroup /usr/local/bin/gpgmw-cron.py
-        chmod u+x /usr/local/bin/gpgmw-cron.py
-
-10. Create `/etc/cron.d/gpgmw` with contents:  
-`*/3 * * * * nobody /usr/bin/python /usr/local/bin/gpgmw-cron.py > /dev/null`  
- for executing the cron job automatically.
-
-11. Test your installation.
+10. Test your installation.
 
 ### GPG-Mailgate-Web as keyserver
 GPG-Mailgate-Web can also be used as a keyserver. For more information have a look at GPG-Mailgate-Web's [readme] (gpg-mailgate-web/README).

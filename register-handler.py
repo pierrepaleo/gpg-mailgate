@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import GnuPG
 from ConfigParser import RawConfigParser
 import email, os, smtplib, sys, traceback, markdown, syslog, requests
 from M2Crypto import BIO, Rand, SMIME, X509
@@ -28,7 +29,7 @@ def log(msg):
 CERT_PATH = cfg['smime']['cert_path']+"/"
 
 def send_msg( message, from_addr, recipients = None ):
-    
+
 	if 'relay' in cfg and 'host' in cfg['relay'] and 'enc_port' in cfg['relay']:
 		relay = (cfg['relay']['host'], int(cfg['relay']['enc_port']))
 		smtp = smtplib.SMTP(relay[0], relay[1])
@@ -76,12 +77,12 @@ if __name__ == "__main__":
 
 			send_msg(msg, cfg['mailregister']['register_email'], [from_addr])
 			sys.exit(0)
-		
+
 		if sign_type == 'smime':
 			raw_sig = sign_part.get_payload().replace("\n","")
 			# re-wrap signature so that it fits base64 standards
 			cooked_sig = '\n'.join(raw_sig[pos:pos+76] for pos in xrange(0, len(raw_sig), 76))
-			
+
 			# now, wrap the signature in a PKCS7 block
 			sig = """
 -----BEGIN PKCS7-----
@@ -102,12 +103,12 @@ if __name__ == "__main__":
 			processed_from_addr = splitted_from_addr[0] + '@' + splitted_from_addr[1].lower()
 
 			signing_cert.save(os.path.join(CERT_PATH, processed_from_addr))
-					
+
 			# format in user-specific data
 			# sending success mail only for S/MIME as GPGMW handles this on its own
 			success_msg = file(cfg['mailregister']['mail_templates']+"/registrationSuccess.md").read()
 			success_msg = success_msg.replace("[:FROMADDRESS:]",from_addr)
-			
+
 			msg = MIMEMultipart("alternative")
 			msg["From"] = cfg['mailregister']['register_email']
 			msg["To"] = from_addr
@@ -115,32 +116,33 @@ if __name__ == "__main__":
 
 			msg.attach(MIMEText(success_msg, 'plain'))
 			msg.attach(MIMEText(markdown.markdown(success_msg), 'html'))
-			
+
 			send_msg(msg, cfg['mailregister']['register_email'], [from_addr])
-			
+
 			log("S/MIME Registration succeeded")
 		elif sign_type == 'pgp':
 			# send POST to gpg-mailgate webpanel
 			sig = sign_part
-			payload = {'email': from_addr, 'key': sig}
-			r = requests.post(cfg['mailregister']['webpanel_url'], data=payload)
 
-			if r.status_code != 200:
-				log("Could not hand registration over to GPGMW. Error: %s" % r.status_code)
-				error_msg = file(cfg['mailregister']['mail_templates']+"/gpgmwFailed.md").read()
-				error_msg = error_msg.replace("[:FROMADDRESS:]",from_addr)
-			
-				msg = MIMEMultipart("alternative")
-				msg["From"] = cfg['mailregister']['register_email']
-				msg["To"] = from_addr
-				msg["Subject"] = "PGP key registration failed"
+                        GnuPG.delete_key(cfg['gpg']['keyhome'], from_addr)
+		        log('Deleted key for <%s> via import request', from_addr)
 
-				msg.attach(MIMEText(error_msg, 'plain'))
-				msg.attach(MIMEText(markdown.markdown(error_msg), 'html'))
-			
-				send_msg(msg, cfg['mailregister']['register_email'], [from_addr])
-			else:
-				log("PGP registration is handed over to GPGMW")
-#	except:
-#		log("Registration exception")
-#		sys.exit(0)
+		        if from_addr.strip(): # we have this so that user can submit blank key to remove any encryption
+			        if GnuPG.confirm_key(sig, from_addr):
+                                        try:
+				                GnuPG.add_key(cfg['gpg']['keyhome'], sig) # import the key to gpg
+                                                log("PGP registration success")
+                                        except:
+				                log("Could not hand registration over to GPGMW. Error: %s" % r.status_code)
+				                error_msg = file(cfg['mailregister']['mail_templates']+"/gpgmwFailed.md").read()
+				                error_msg = error_msg.replace("[:FROMADDRESS:]",from_addr)
+
+				                msg = MIMEMultipart("alternative")
+				                msg["From"] = cfg['mailregister']['register_email']
+				                msg["To"] = from_addr
+				                msg["Subject"] = "PGP key registration failed"
+
+				                msg.attach(MIMEText(error_msg, 'plain'))
+				                msg.attach(MIMEText(markdown.markdown(error_msg), 'html'))
+
+				                send_msg(msg, cfg['mailregister']['register_email'], [from_addr])

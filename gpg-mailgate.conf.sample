@@ -56,14 +56,6 @@ cert_path = /var/gpgmailgate/smime
 # settings for the register-handler
 register_email = register@yourdomain.tld
 mail_templates = /var/gpgmailgate/register_templates
-# URL to webpanel. The server should be able to reach it
-webpanel_url = http://yourdomain.tld
-
-[cron]
-# settings for the gpgmw cron job
-send_email = yes
-notification_email = gpg-mailgate@yourdomain.tld
-mail_templates = /var/gpgmailgate/cron_templates
 
 [logging]
 # For logging to syslog. 'file = syslog', otherwise use path to the file.
@@ -79,15 +71,6 @@ port = 10028
 # This is the default port of postfix. It is used to send some
 # mails through the GPG-Mailgate so they are encrypted
 enc_port = 25
-
-[database]
-# uncomment the settings below if you want
-#  to read keys from a gpg-mailgate-web database
-enabled = yes
-name = gpgmw
-host = localhost
-username = gpgmw
-password = password
 
 [enc_keymap]
 # You can find these by running the following command:
