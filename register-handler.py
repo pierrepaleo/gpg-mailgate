@@ -128,21 +128,22 @@ if __name__ == "__main__":
 		        log('Deleted key for <%s> via import request' % from_addr)
 
 		        if from_addr.strip(): # we have this so that user can submit blank key to remove any encryption
-			        if GnuPG.confirm_key(sig, from_addr):
-                                        try:
-				                GnuPG.add_key(cfg['gpg']['keyhome'], sig) # import the key to gpg
-                                                log("PGP registration success")
-                                        except:
-				                log("Could not hand registration over to GPGMW. Error: %s" % r.status_code)
-				                error_msg = file(cfg['mailregister']['mail_templates']+"/gpgmwFailed.md").read()
-				                error_msg = error_msg.replace("[:FROMADDRESS:]",from_addr)
+			        if not GnuPG.confirm_key(sig, from_addr):
+                                        log("Can not verify sig for email <%s>" % from_addr)
+                                try:
+				        GnuPG.add_key(cfg['gpg']['keyhome'], sig) # import the key to gpg
+                                        log("PGP registration success")
+                                except:
+				        log("Could not hand registration over to GPGMW. Error: %s" % r.status_code)
+				        error_msg = file(cfg['mailregister']['mail_templates']+"/gpgmwFailed.md").read()
+				        error_msg = error_msg.replace("[:FROMADDRESS:]",from_addr)
 
-				                msg = MIMEMultipart("alternative")
-				                msg["From"] = cfg['mailregister']['register_email']
-				                msg["To"] = from_addr
-				                msg["Subject"] = "PGP key registration failed"
+				        msg = MIMEMultipart("alternative")
+				        msg["From"] = cfg['mailregister']['register_email']
+				        msg["To"] = from_addr
+				        msg["Subject"] = "PGP key registration failed"
 
-				                msg.attach(MIMEText(error_msg, 'plain'))
-				                msg.attach(MIMEText(markdown.markdown(error_msg), 'html'))
+				        msg.attach(MIMEText(error_msg, 'plain'))
+				        msg.attach(MIMEText(markdown.markdown(error_msg), 'html'))
 
-				                send_msg(msg, cfg['mailregister']['register_email'], [from_addr])
+				        send_msg(msg, cfg['mailregister']['register_email'], [from_addr])
