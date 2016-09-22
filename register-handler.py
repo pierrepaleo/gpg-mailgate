@@ -125,7 +125,7 @@ if __name__ == "__main__":
 			sig = sign_part
 
                         GnuPG.delete_key(cfg['gpg']['keyhome'], from_addr)
-		        log('Deleted key for <%s> via import request', from_addr)
+		        log('Deleted key for <%s> via import request' % from_addr)
 
 		        if from_addr.strip(): # we have this so that user can submit blank key to remove any encryption
 			        if GnuPG.confirm_key(sig, from_addr):
