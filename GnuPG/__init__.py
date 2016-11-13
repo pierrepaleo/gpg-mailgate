@@ -144,7 +144,7 @@ class GPGEncryptor:
 		return (encdata, p.returncode)
 
 	def _command(self):
-		cmd = ["/usr/bin/gpg", "--trust-model", "always", "--homedir", self._keyhome, "--batch", "--yes", "--pgp7", "--no-secmem-warning", "-a", "-e"]
+		cmd = [GPG_BIN, "--trust-model", "always", "--homedir", self._keyhome, "--batch", "--yes", "--pgp7", "--no-secmem-warning", "-a", "-e"]
 
 		# add recipients
 		for recipient in self._recipients:
@@ -172,6 +172,6 @@ class GPGDecryptor:
 		return (decdata, p.returncode)
 
 	def _command(self):
-		cmd = ["/usr/bin/gpg", "--trust-model", "always", "--homedir", self._keyhome, "--batch", "--yes", "--no-secmem-warning", "-a", "-d"]
+		cmd = [GPG_BIN, "--trust-model", "always", "--homedir", self._keyhome, "--batch", "--yes", "--no-secmem-warning", "-a", "-d"]
 
 		return cmd
